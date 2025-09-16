@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Image as ImageIcon, Wand2, Download, RefreshCw, Sparkles } from "lucide-react";
+import { Upload, Image as ImageIcon, Wand2, Download, RefreshCw, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUploadArea } from "./ImageUploadArea";
-import heroDemo from "@/assets/hero-demo.jpg";
+import { WelcomeCards } from "./WelcomeCards";
 
 interface UploadedImage {
   id: string;
@@ -22,6 +22,7 @@ export const Workspace = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<string | null>(null);
+  const [hasStartedProject, setHasStartedProject] = useState(false);
 
   const handleImageUpload = useCallback((files: FileList, type: "source" | "reference") => {
     const file = files[0];
@@ -43,9 +44,11 @@ export const Workspace = () => {
 
       if (type === "source") {
         setSourceImage(uploadedImage);
+        setHasStartedProject(true);
         toast.success("Source image uploaded successfully");
       } else {
         setReferenceImage(uploadedImage);
+        setHasStartedProject(true);
         toast.success("Reference image uploaded successfully");
       }
     };
@@ -96,155 +99,207 @@ export const Workspace = () => {
     setReferenceImage(null);
     setPrompt("");
     setResult(null);
+    setHasStartedProject(false);
     toast("Workspace cleared");
   };
 
+  const handleDownload = () => {
+    if (result) {
+      // Create download link
+      const link = document.createElement('a');
+      link.href = result;
+      link.download = 'perfectframe-ai-result.jpg';
+      link.click();
+      toast.success("Image downloaded successfully!");
+    }
+  };
+
+  // Show welcome cards if no project has been started
+  if (!hasStartedProject && !sourceImage && !referenceImage) {
+    return <WelcomeCards />;
+  }
+
   return (
-    <div className="h-full p-6 overflow-y-auto">
-      <div className="max-w-6xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h2 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-            AI Image Completion Studio
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Upload your incomplete image, provide a reference for style guidance, and let AI complete your vision
-          </p>
-          
-          {/* Demo Preview */}
-          {!sourceImage && !referenceImage && !prompt && (
-            <Card className="p-6 gradient-card border-border/50 shadow-card max-w-4xl mx-auto">
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-primary">AI Completion Example</span>
-                </div>
-                <img 
-                  src={heroDemo} 
-                  alt="AI Image Completion Demo"
-                  className="w-full rounded-lg shadow-elegant"
-                />
-                <p className="text-sm text-muted-foreground">
-                  See how AI transforms incomplete images into stunning, complete works of art
-                </p>
+    <div className="h-full overflow-auto">
+      {/* AI Processing Status */}
+      {isGenerating && (
+        <div className="p-4 sm:p-6 pb-0">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-primary">AI is working on your image...</span>
               </div>
+              <Progress value={progress} className="w-full" />
+              <p className="text-xs text-muted-foreground mt-2">
+                This may take 30-60 seconds depending on complexity
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="p-4 sm:p-6 space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Generated Result */}
+          {result && (
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Generated Result
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="aspect-square max-w-md mx-auto rounded-lg overflow-hidden shadow-card">
+                  <img
+                    src={result}
+                    alt="AI Generated Result"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  <Button onClick={handleDownload} variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </Button>
+                  <Button onClick={handleGenerate} variant="outline">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Regenerate
+                  </Button>
+                  <Button onClick={clearAll} variant="outline">
+                    Clear All
+                  </Button>
+                </div>
+              </CardContent>
             </Card>
           )}
-        </div>
 
-        {/* Upload Section */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <ImageUploadArea
-            title="Source Image"
-            description="Upload the image you want to complete"
-            image={sourceImage}
-            onUpload={(files) => handleImageUpload(files, "source")}
-            required
-          />
-          
-          <ImageUploadArea
-            title="Reference Image"
-            description="Upload a reference for style guidance (optional)"
-            image={referenceImage}
-            onUpload={(files) => handleImageUpload(files, "reference")}
-          />
-        </div>
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Left Column - Input Controls */}
+            <div className="space-y-6">
+              {/* Source Image Upload */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Source Image
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ImageUploadArea
+                    title="Upload your incomplete image"
+                    description="The image you want to complete or enhance"
+                    image={sourceImage}
+                    onUpload={(files) => handleImageUpload(files, "source")}
+                    required
+                  />
+                </CardContent>
+              </Card>
 
-        {/* Prompt Section */}
-        <Card className="p-6 gradient-card border-border/50">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Wand2 className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-semibold">Describe Your Vision</h3>
+              {/* Reference Image Upload */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-accent-foreground" />
+                    Reference Image
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ImageUploadArea
+                    title="Upload reference for style/content"
+                    description="An example of the desired style or content"
+                    image={referenceImage}
+                    onUpload={(files) => handleImageUpload(files, "reference")}
+                  />
+                </CardContent>
+              </Card>
             </div>
-            
-            <Textarea
-              placeholder="Describe what you want the completed image to look like... (e.g., 'Complete the landscape with mountains and a sunset sky, making it photorealistic with warm lighting')"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="min-h-[100px] bg-input border-border/50 focus:border-ring resize-none"
-            />
-            
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleGenerate}
-                disabled={isGenerating || !sourceImage}
-                className="gradient-primary hover:shadow-glow transition-glow text-primary-foreground border-0"
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="w-4 h-4 mr-2" />
-                    Generate Image
-                  </>
-                )}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={clearAll}
-                className="border-border/50 hover:border-border transition-smooth"
-              >
-                Clear All
-              </Button>
+
+            {/* Right Column - AI Prompt & Generation */}
+            <div className="space-y-6">
+              {/* AI Prompt */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wand2 className="h-5 w-5 text-primary" />
+                    AI Prompt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Textarea
+                    placeholder="Describe what you want to achieve... e.g., 'Complete this landscape painting in the style of Van Gogh, add vibrant colors and swirling patterns in the sky'"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="min-h-32 resize-none bg-background border-border/50 focus:border-primary transition-smooth"
+                  />
+                  
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      onClick={handleGenerate}
+                      disabled={!sourceImage || !prompt.trim() || isGenerating}
+                      className="flex-1 min-w-[200px] gradient-primary hover:opacity-90 text-primary-foreground font-semibold transition-smooth shadow-elegant"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="mr-2 h-4 w-4" />
+                          Generate Image
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={clearAll}
+                      className="border-border/50 hover:border-border transition-smooth"
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Be specific about style, colors, and details for best results
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Quick Prompt Examples */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">Example Prompts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <button 
+                      onClick={() => setPrompt("Complete this portrait with photorealistic details, maintaining natural skin tones and lighting")}
+                      className="text-left w-full p-3 rounded-md hover:bg-muted/50 transition-smooth border border-transparent hover:border-border/50"
+                    >
+                      <span className="font-medium text-primary">"</span>Complete this portrait with photorealistic details, maintaining natural skin tones and lighting<span className="font-medium text-primary">"</span>
+                    </button>
+                    <button 
+                      onClick={() => setPrompt("Transform this sketch into a vibrant digital artwork with bold colors and modern artistic style")}
+                      className="text-left w-full p-3 rounded-md hover:bg-muted/50 transition-smooth border border-transparent hover:border-border/50"
+                    >
+                      <span className="font-medium text-primary">"</span>Transform this sketch into a vibrant digital artwork with bold colors and modern artistic style<span className="font-medium text-primary">"</span>
+                    </button>
+                    <button 
+                      onClick={() => setPrompt("Complete this landscape scene with dramatic sunset lighting and enhanced atmospheric depth")}
+                      className="text-left w-full p-3 rounded-md hover:bg-muted/50 transition-smooth border border-transparent hover:border-border/50"
+                    >
+                      <span className="font-medium text-primary">"</span>Complete this landscape scene with dramatic sunset lighting and enhanced atmospheric depth<span className="font-medium text-primary">"</span>
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </Card>
-
-        {/* Progress */}
-        {isGenerating && (
-          <Card className="p-6 gradient-card border-border/50">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Generating your image...</span>
-                <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                AI is analyzing your images and prompt to create the perfect completion
-              </p>
-            </div>
-          </Card>
-        )}
-
-        {/* Result */}
-        {result && (
-          <Card className="p-6 gradient-card border-border/50 shadow-card">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold">Generated Result</h3>
-                </div>
-                
-                <Button 
-                  variant="outline"
-                  className="border-border/50 hover:border-border transition-smooth"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
-              </div>
-              
-              <div className="relative rounded-lg overflow-hidden bg-muted">
-                <img 
-                  src={result} 
-                  alt="AI Generated Result"
-                  className="w-full h-auto max-h-96 object-contain"
-                />
-              </div>
-              
-              <p className="text-sm text-muted-foreground">
-                Your AI-enhanced image is ready! You can download it or start a new project.
-              </p>
-            </div>
-          </Card>
-        )}
+        </div>
       </div>
     </div>
   );

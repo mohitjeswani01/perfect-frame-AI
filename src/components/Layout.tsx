@@ -2,15 +2,30 @@ import { useState } from "react";
 import { ProjectSidebar } from "./ProjectSidebar";
 import { Workspace } from "./Workspace";
 import { Header } from "./Header";
+import { Login } from "./Login";
 import { Button } from "@/components/ui/button";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setSidebarOpen(true); // Reset sidebar state
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <div className="h-screen w-full bg-background overflow-hidden">
-      <Header />
+      <Header onLogout={handleLogout} />
       
       <div className="flex h-[calc(100vh-4rem)] w-full">
         {/* Sidebar */}
