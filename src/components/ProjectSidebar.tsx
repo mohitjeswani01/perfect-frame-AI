@@ -43,12 +43,27 @@ const mockProjects: Project[] = [
   }
 ];
 
-export const ProjectSidebar = () => {
+interface ProjectSidebarProps {
+  onViewGallery: () => void;
+}
+
+export const ProjectSidebar = ({ onViewGallery }: ProjectSidebarProps) => {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [selectedProject, setSelectedProject] = useState<string>("1");
 
   const handleNewProject = () => {
-    toast("Starting new project", {
+    const newProject: Project = {
+      id: Date.now().toString(),
+      name: `Project ${projects.length + 1}`,
+      timestamp: "Just now",
+      preview: "New AI image completion project",
+      starred: false
+    };
+    
+    setProjects([newProject, ...projects]);
+    setSelectedProject(newProject.id);
+    
+    toast("New project started", {
       description: "Ready to create amazing AI-enhanced images!"
     });
   };
@@ -67,13 +82,22 @@ export const ProjectSidebar = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border space-y-3">
         <Button 
           onClick={handleNewProject}
           className="w-full gradient-primary hover:shadow-glow transition-glow text-primary-foreground border-0"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Project
+        </Button>
+        
+        <Button 
+          onClick={onViewGallery}
+          variant="outline"
+          className="w-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-smooth"
+        >
+          <Image className="w-4 h-4 mr-2" />
+          View Gallery
         </Button>
       </div>
 
@@ -84,63 +108,65 @@ export const ProjectSidebar = () => {
             Recent Projects
           </div>
           
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              onClick={() => setSelectedProject(project.id)}
-              className={`group relative p-3 mb-2 rounded-lg border cursor-pointer transition-smooth ${
-                selectedProject === project.id
-                  ? "bg-accent border-ring shadow-card"
-                  : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-              }`}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Image className="w-4 h-4 text-primary" />
-                  <h3 className="font-medium text-sm text-foreground truncate">
-                    {project.name}
-                  </h3>
+          <div className="space-y-2">
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                onClick={() => setSelectedProject(project.id)}
+                className={`group relative p-3 rounded-lg border cursor-pointer transition-smooth ${
+                  selectedProject === project.id
+                    ? "bg-accent border-ring shadow-card"
+                    : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Image className="w-4 h-4 text-primary shrink-0" />
+                    <h3 className="font-medium text-sm text-foreground truncate">
+                      {project.name}
+                    </h3>
+                  </div>
+                  
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-smooth ml-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleStar(project.id);
+                      }}
+                      className="h-6 w-6"
+                    >
+                      <Star className={`w-3 h-3 ${
+                        project.starred ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"
+                      }`} />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteProject(project.id);
+                      }}
+                      className="h-6 w-6 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-smooth">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStar(project.id);
-                    }}
-                    className="h-6 w-6"
-                  >
-                    <Star className={`w-3 h-3 ${
-                      project.starred ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"
-                    }`} />
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteProject(project.id);
-                    }}
-                    className="h-6 w-6 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                  {project.preview}
+                </p>
+                
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  {project.timestamp}
                 </div>
               </div>
-              
-              <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                {project.preview}
-              </p>
-              
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {project.timestamp}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </ScrollArea>
     </div>

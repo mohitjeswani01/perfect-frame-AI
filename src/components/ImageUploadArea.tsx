@@ -16,6 +16,7 @@ interface ImageUploadAreaProps {
   image: UploadedImage | null;
   onUpload: (files: FileList) => void;
   required?: boolean;
+  compact?: boolean;
 }
 
 export const ImageUploadArea = ({ 
@@ -23,7 +24,8 @@ export const ImageUploadArea = ({
   description, 
   image, 
   onUpload, 
-  required = false 
+  required = false,
+  compact = false
 }: ImageUploadAreaProps) => {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -64,77 +66,90 @@ export const ImageUploadArea = ({
   }, []);
 
   return (
-    <Card className={`relative p-6 border-2 border-dashed transition-smooth ${
-      isDragging 
-        ? "border-primary bg-primary/5 shadow-glow" 
-        : image 
-        ? "border-border bg-card"
-        : "border-border/50 bg-upload hover:border-border hover:bg-upload-hover"
-    }`}>
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">{title}</h3>
-          {required && <span className="text-xs text-destructive">*</span>}
-        </div>
-
-        {image ? (
-          <div className="space-y-4">
-            <div className="relative rounded-lg overflow-hidden bg-muted">
-              <img 
-                src={image.preview} 
-                alt="Uploaded preview"
-                className="w-full h-48 object-cover"
-              />
+    <div className="w-full">
+      {image ? (
+        <div className="relative group">
+          <div className={`${compact ? 'aspect-video' : 'aspect-square'} w-full rounded-lg overflow-hidden shadow-card`}>
+            <img
+              src={image.preview}
+              alt="Uploaded"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+            <div className="space-y-2">
               <Button
-                variant="destructive"
-                size="icon"
-                onClick={removeImage}
-                className="absolute top-2 right-2 h-8 w-8 shadow-lg"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.files && target.files.length > 0) {
+                      onUpload(target.files);
+                    }
+                  };
+                  input.click();
+                }}
+                variant="secondary"
+                size="sm"
+                className="bg-white/90 text-black hover:bg-white"
               >
-                <X className="w-4 h-4" />
+                <Upload className="mr-2 h-4 w-4" />
+                Change
               </Button>
             </div>
-            
-            <div className="space-y-1">
-              <p className="text-sm font-medium truncate">{image.file.name}</p>
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.files && target.files.length > 0) {
+                onUpload(target.files);
+              }
+            };
+            input.click();
+          }}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`
+            relative ${compact ? 'aspect-video' : 'aspect-square'} w-full rounded-lg border-2 border-dashed border-border/50 
+            hover:border-primary/50 transition-all duration-300 cursor-pointer
+            flex flex-col items-center justify-center space-y-2 p-4
+            bg-card/30 hover:bg-card/50 group
+            ${isDragging ? 'border-primary bg-primary/5' : ''}
+          `}
+        >
+          <div className={`${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors`}>
+            <Upload className={`${compact ? 'w-4 h-4' : 'w-6 h-6'} text-primary`} />
+          </div>
+          
+          <div className="text-center space-y-1">
+            <h3 className={`${compact ? 'text-sm' : 'text-base'} font-medium text-foreground`}>
+              {title}
+              {required && <span className="text-red-500 ml-1">*</span>}
+            </h3>
+            <p className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>{description}</p>
+            {!compact && (
               <p className="text-xs text-muted-foreground">
-                {(image.file.size / 1024 / 1024).toFixed(2)} MB
+                Click to upload or drag and drop
               </p>
-            </div>
+            )}
           </div>
-        ) : (
-          <div
-            className="relative"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            />
-            
-            <div className="text-center py-8 space-y-4">
-              <div className="flex justify-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <p className="font-medium">Drop your image here</p>
-                <p className="text-sm text-muted-foreground">{description}</p>
-                <p className="text-xs text-muted-foreground">
-                  or click to browse • PNG, JPG, WebP up to 10MB
-                </p>
-              </div>
+
+          {isDragging && (
+            <div className="absolute inset-0 bg-primary/10 rounded-lg flex items-center justify-center">
+              <p className="text-primary font-medium text-sm">Drop image here</p>
             </div>
-          </div>
-        )}
-      </div>
-    </Card>
+          )}
+        </div>
+      )}
+    </div>
   );
 };

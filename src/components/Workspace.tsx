@@ -15,7 +15,11 @@ interface UploadedImage {
   type: "source" | "reference";
 }
 
-export const Workspace = () => {
+interface WorkspaceProps {
+  onViewGallery: () => void;
+}
+
+export const Workspace = ({ onViewGallery }: WorkspaceProps) => {
   const [sourceImage, setSourceImage] = useState<UploadedImage | null>(null);
   const [referenceImage, setReferenceImage] = useState<UploadedImage | null>(null);
   const [prompt, setPrompt] = useState("");
@@ -114,146 +118,130 @@ export const Workspace = () => {
     }
   };
 
-  // Show welcome cards if no project has been started
-  if (!hasStartedProject && !sourceImage && !referenceImage) {
-    return <WelcomeCards />;
-  }
+  const showWelcome = !hasStartedProject && !sourceImage && !referenceImage;
 
   return (
-    <div className="h-full overflow-auto">
-      {/* AI Processing Status */}
-      {isGenerating && (
-        <div className="p-4 sm:p-6 pb-0">
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-primary">AI is working on your image...</span>
-              </div>
-              <Progress value={progress} className="w-full" />
-              <p className="text-xs text-muted-foreground mt-2">
-                This may take 30-60 seconds depending on complexity
-              </p>
-            </CardContent>
-          </Card>
+    <div className="h-full flex flex-col">
+      {/* Welcome Section - Only show if no project started */}
+      {showWelcome && (
+        <div className="flex-1 overflow-auto">
+          <WelcomeCards onStartProject={() => setHasStartedProject(true)} onViewGallery={onViewGallery} />
         </div>
       )}
 
-      <div className="p-4 sm:p-6 space-y-6">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Generated Result */}
-          {result && (
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  Generated Result
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="aspect-square max-w-md mx-auto rounded-lg overflow-hidden shadow-card">
-                  <img
-                    src={result}
-                    alt="AI Generated Result"
-                    className="w-full h-full object-cover"
-                  />
+      {/* Main Chat Interface - Always visible at bottom or full height */}
+      <div className={`${showWelcome ? 'h-auto' : 'flex-1'} flex flex-col`}>
+        {/* AI Processing Status */}
+        {isGenerating && (
+          <div className="p-4 sm:p-6 pb-0">
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-primary">AI is working on your image...</span>
                 </div>
-                <div className="flex gap-2 justify-center flex-wrap">
-                  <Button onClick={handleDownload} variant="outline">
-                    <Download className="mr-2 h-4 w-4" />
-                    Download
-                  </Button>
-                  <Button onClick={handleGenerate} variant="outline">
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Regenerate
-                  </Button>
-                  <Button onClick={clearAll} variant="outline">
-                    Clear All
-                  </Button>
-                </div>
+                <Progress value={progress} className="w-full" />
+                <p className="text-xs text-muted-foreground mt-2">
+                  This may take 30-60 seconds depending on complexity
+                </p>
               </CardContent>
             </Card>
-          )}
+          </div>
+        )}
 
-          {/* Main Content Grid */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Left Column - Input Controls */}
-            <div className="space-y-6">
-              {/* Source Image Upload */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    Source Image
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ImageUploadArea
-                    title="Upload your incomplete image"
-                    description="The image you want to complete or enhance"
-                    image={sourceImage}
-                    onUpload={(files) => handleImageUpload(files, "source")}
-                    required
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Reference Image Upload */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-accent-foreground" />
-                    Reference Image
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ImageUploadArea
-                    title="Upload reference for style/content"
-                    description="An example of the desired style or content"
-                    image={referenceImage}
-                    onUpload={(files) => handleImageUpload(files, "reference")}
-                  />
-                </CardContent>
-              </Card>
+        {/* Results Section */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-4 sm:p-6 space-y-6">
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Generated Result */}
+              {result && (
+                <Card className="border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      Generated Result
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="aspect-square max-w-md mx-auto rounded-lg overflow-hidden shadow-card">
+                      <img
+                        src={result}
+                        alt="AI Generated Result"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      <Button onClick={handleDownload} variant="outline">
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </Button>
+                      <Button onClick={handleGenerate} variant="outline">
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Regenerate
+                      </Button>
+                      <Button onClick={clearAll} variant="outline">
+                        Clear All
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
+          </div>
+        </div>
 
-            {/* Right Column - AI Prompt & Generation */}
-            <div className="space-y-6">
-              {/* AI Prompt */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Wand2 className="h-5 w-5 text-primary" />
-                    AI Prompt
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Textarea
-                    placeholder="Describe what you want to achieve... e.g., 'Complete this landscape painting in the style of Van Gogh, add vibrant colors and swirling patterns in the sky'"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    className="min-h-32 resize-none bg-background border-border/50 focus:border-primary transition-smooth"
-                  />
+        {/* Input Section - Always at bottom */}
+        <div className="border-t border-border bg-card/50 backdrop-blur-sm">
+          <div className="p-4 sm:p-6">
+            <div className="max-w-4xl mx-auto space-y-4">
+              {/* Image Uploads */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ImageUploadArea
+                  title="Source Image"
+                  description="Your incomplete image"
+                  image={sourceImage}
+                  onUpload={(files) => handleImageUpload(files, "source")}
+                  required
+                  compact
+                />
+                <ImageUploadArea
+                  title="Reference Image"
+                  description="Style reference (optional)"
+                  image={referenceImage}
+                  onUpload={(files) => handleImageUpload(files, "reference")}
+                  compact
+                />
+              </div>
+
+              {/* Prompt Input */}
+              <div className="space-y-3">
+                <Textarea
+                  placeholder="Describe how you want to complete your image... e.g., 'Complete this landscape with sunset lighting and vibrant colors'"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="min-h-20 resize-none bg-background border-border/50 focus:border-primary transition-smooth"
+                />
+                
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={!sourceImage || !prompt.trim() || isGenerating}
+                    className="gradient-primary hover:opacity-90 text-primary-foreground font-semibold transition-smooth shadow-elegant"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="mr-2 h-4 w-4" />
+                        Generate Image
+                      </>
+                    )}
+                  </Button>
                   
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      onClick={handleGenerate}
-                      disabled={!sourceImage || !prompt.trim() || isGenerating}
-                      className="flex-1 min-w-[200px] gradient-primary hover:opacity-90 text-primary-foreground font-semibold transition-smooth shadow-elegant"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Wand2 className="mr-2 h-4 w-4" />
-                          Generate Image
-                        </>
-                      )}
-                    </Button>
-                    
+                  {(sourceImage || referenceImage || prompt) && (
                     <Button 
                       variant="outline" 
                       onClick={clearAll}
@@ -261,42 +249,33 @@ export const Workspace = () => {
                     >
                       Clear All
                     </Button>
-                  </div>
+                  )}
+                </div>
 
-                  <p className="text-xs text-muted-foreground">
-                    Be specific about style, colors, and details for best results
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Quick Prompt Examples */}
-              <Card className="bg-muted/30">
-                <CardHeader>
-                  <CardTitle className="text-base">Example Prompts</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
+                {/* Quick Examples */}
+                {!sourceImage && (
+                  <div className="flex gap-2 flex-wrap">
                     <button 
-                      onClick={() => setPrompt("Complete this portrait with photorealistic details, maintaining natural skin tones and lighting")}
-                      className="text-left w-full p-3 rounded-md hover:bg-muted/50 transition-smooth border border-transparent hover:border-border/50"
+                      onClick={() => setPrompt("Complete this portrait with photorealistic details")}
+                      className="text-xs px-3 py-1 rounded-full bg-muted/50 hover:bg-muted transition-smooth text-muted-foreground hover:text-foreground"
                     >
-                      <span className="font-medium text-primary">"</span>Complete this portrait with photorealistic details, maintaining natural skin tones and lighting<span className="font-medium text-primary">"</span>
+                      Portrait enhancement
                     </button>
                     <button 
-                      onClick={() => setPrompt("Transform this sketch into a vibrant digital artwork with bold colors and modern artistic style")}
-                      className="text-left w-full p-3 rounded-md hover:bg-muted/50 transition-smooth border border-transparent hover:border-border/50"
+                      onClick={() => setPrompt("Transform this sketch into vibrant digital artwork")}
+                      className="text-xs px-3 py-1 rounded-full bg-muted/50 hover:bg-muted transition-smooth text-muted-foreground hover:text-foreground"
                     >
-                      <span className="font-medium text-primary">"</span>Transform this sketch into a vibrant digital artwork with bold colors and modern artistic style<span className="font-medium text-primary">"</span>
+                      Artistic style
                     </button>
                     <button 
-                      onClick={() => setPrompt("Complete this landscape scene with dramatic sunset lighting and enhanced atmospheric depth")}
-                      className="text-left w-full p-3 rounded-md hover:bg-muted/50 transition-smooth border border-transparent hover:border-border/50"
+                      onClick={() => setPrompt("Complete this landscape with dramatic sunset lighting")}
+                      className="text-xs px-3 py-1 rounded-full bg-muted/50 hover:bg-muted transition-smooth text-muted-foreground hover:text-foreground"
                     >
-                      <span className="font-medium text-primary">"</span>Complete this landscape scene with dramatic sunset lighting and enhanced atmospheric depth<span className="font-medium text-primary">"</span>
+                      Landscape completion
                     </button>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </div>
             </div>
           </div>
         </div>

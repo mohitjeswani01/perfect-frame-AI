@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ProjectSidebar } from "./ProjectSidebar";
 import { Workspace } from "./Workspace";
+import { Gallery } from "./Gallery";
 import { Header } from "./Header";
 import { Login } from "./Login";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentView, setCurrentView] = useState<"workspace" | "gallery">("workspace");
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -17,6 +19,15 @@ export const Layout = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setSidebarOpen(true); // Reset sidebar state
+    setCurrentView("workspace");
+  };
+
+  const handleViewGallery = () => {
+    setCurrentView("gallery");
+  };
+
+  const handleBackToWorkspace = () => {
+    setCurrentView("workspace");
   };
 
   if (!isLoggedIn) {
@@ -30,9 +41,9 @@ export const Layout = () => {
       <div className="flex h-[calc(100vh-4rem)] w-full">
         {/* Sidebar */}
         <div className={`sidebar-bg border-r border-border transition-smooth ${
-          sidebarOpen ? "w-80" : "w-0"
+          sidebarOpen ? "w-80 sm:w-80" : "w-0"
         } overflow-hidden`}>
-          <ProjectSidebar />
+          <ProjectSidebar onViewGallery={handleViewGallery} />
         </div>
 
         {/* Main Content */}
@@ -51,9 +62,13 @@ export const Layout = () => {
             )}
           </Button>
 
-          {/* Workspace */}
+          {/* Content */}
           <div className="h-full gradient-workspace">
-            <Workspace />
+            {currentView === "gallery" ? (
+              <Gallery onBack={handleBackToWorkspace} />
+            ) : (
+              <Workspace onViewGallery={handleViewGallery} />
+            )}
           </div>
         </div>
       </div>

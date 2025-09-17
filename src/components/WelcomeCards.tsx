@@ -12,13 +12,19 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export const WelcomeCards = () => {
+interface WelcomeCardsProps {
+  onStartProject: () => void;
+  onViewGallery: () => void;
+}
+
+export const WelcomeCards = ({ onStartProject, onViewGallery }: WelcomeCardsProps) => {
   const handleStartProject = () => {
+    onStartProject();
     toast.success("Let's create something amazing!");
   };
 
-  const handleViewExample = (example: string) => {
-    toast.success(`Viewing ${example} example`);
+  const handleViewGallery = () => {
+    onViewGallery();
   };
 
   return (
@@ -76,7 +82,7 @@ export const WelcomeCards = () => {
               </p>
             </div>
             <Button 
-              onClick={() => handleViewExample("Gallery")}
+              onClick={handleViewGallery}
               variant="outline" 
               size="lg" 
               className="w-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-smooth"
