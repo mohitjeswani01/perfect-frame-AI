@@ -130,10 +130,10 @@ export const Workspace = ({ onViewGallery }: WorkspaceProps) => {
       )}
 
       {/* Main Chat Interface - Always visible at bottom or full height */}
-      <div className={`${showWelcome ? 'h-auto' : 'flex-1'} flex flex-col`}>
+      <div className={`${showWelcome ? 'h-auto' : 'flex-1'} flex flex-col min-h-0`}>
         {/* AI Processing Status */}
         {isGenerating && (
-          <div className="p-4 sm:p-6 pb-0">
+          <div className="p-4 sm:p-6 pb-0 shrink-0">
             <Card className="border-primary/20 bg-primary/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
@@ -149,49 +149,51 @@ export const Workspace = ({ onViewGallery }: WorkspaceProps) => {
           </div>
         )}
 
-        {/* Results Section */}
-        <div className="flex-1 overflow-auto">
-          <div className="p-4 sm:p-6 space-y-6">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Generated Result */}
-              {result && (
-                <Card className="border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                      Generated Result
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="aspect-square max-w-md mx-auto rounded-lg overflow-hidden shadow-card">
-                      <img
-                        src={result}
-                        alt="AI Generated Result"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex gap-2 justify-center flex-wrap">
-                      <Button onClick={handleDownload} variant="outline">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
-                      <Button onClick={handleGenerate} variant="outline">
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Regenerate
-                      </Button>
-                      <Button onClick={clearAll} variant="outline">
-                        Clear All
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+        {/* Results Section - Scrollable with proper spacing */}
+        {(result || isGenerating) && (
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="p-4 sm:p-6 pb-2">
+              <div className="max-w-4xl mx-auto">
+                {/* Generated Result */}
+                {result && (
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        Generated Result
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="aspect-square max-w-md mx-auto rounded-lg overflow-hidden shadow-card">
+                        <img
+                          src={result}
+                          alt="AI Generated Result"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-center flex-wrap">
+                        <Button onClick={handleDownload} variant="outline">
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                        <Button onClick={handleGenerate} variant="outline">
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Regenerate
+                        </Button>
+                        <Button onClick={clearAll} variant="outline">
+                          Clear All
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Input Section - Always at bottom */}
-        <div className="border-t border-border bg-card/50 backdrop-blur-sm">
+        {/* Input Section - Always visible at bottom */}
+        <div className="border-t border-border bg-card/50 backdrop-blur-sm shrink-0">
           <div className="p-4 sm:p-6">
             <div className="max-w-4xl mx-auto space-y-4">
               {/* Image Uploads */}

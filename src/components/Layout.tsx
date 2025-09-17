@@ -38,16 +38,24 @@ export const Layout = () => {
     <div className="h-screen w-full bg-background overflow-hidden">
       <Header onLogout={handleLogout} />
       
-      <div className="flex h-[calc(100vh-4rem)] w-full">
-        {/* Sidebar */}
-        <div className={`sidebar-bg border-r border-border transition-smooth ${
-          sidebarOpen ? "w-80 sm:w-80" : "w-0"
-        } overflow-hidden`}>
+      <div className="flex h-[calc(100vh-4rem)] w-full relative">
+        {/* Sidebar Overlay */}
+        <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] sidebar-bg border-r border-border transition-all duration-300 z-40 ${
+          sidebarOpen ? "w-80 translate-x-0" : "w-80 -translate-x-full"
+        } overflow-hidden shadow-2xl`}>
           <ProjectSidebar onViewGallery={handleViewGallery} />
         </div>
 
+        {/* Backdrop */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 top-16"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Content */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative w-full">
           {/* Sidebar Toggle */}
           <Button
             variant="ghost"
