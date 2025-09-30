@@ -11,23 +11,43 @@ interface LoginProps {
 }
 
 export const Login = ({ onLogin }: LoginProps) => {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
-      return;
+    
+    if (isSignUp) {
+      if (!firstName || !email || !password || !confirmPassword) {
+        toast.error("Please fill in all fields");
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+      }
+      if (password.length < 8) {
+        toast.error("Password must be at least 8 characters");
+        return;
+      }
+    } else {
+      if (!email || !password) {
+        toast.error("Please fill in all fields");
+        return;
+      }
     }
 
     setIsLoading(true);
     
-    // Simulate login process
+    // Simulate authentication process
     setTimeout(() => {
-      toast.success("Welcome to PerfectFrame AI!");
+      toast.success(isSignUp ? "Account created successfully!" : "Welcome to PerfectFrame AI!");
       setIsLoading(false);
       onLogin();
     }, 1500);
@@ -35,6 +55,10 @@ export const Login = ({ onLogin }: LoginProps) => {
 
   const handleGoogleLogin = () => {
     toast.success("Google sign-in coming soon!");
+  };
+
+  const handleForgotPassword = () => {
+    toast.success("Password reset link will be sent to your email");
   };
 
   return (
@@ -47,18 +71,33 @@ export const Login = ({ onLogin }: LoginProps) => {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-              Welcome Back
+              {isSignUp ? "Create Account" : "Welcome Back"}
             </h1>
             <p className="text-muted-foreground">
-              Sign in to your PerfectFrame AI account
+              {isSignUp ? "Sign up for PerfectFrame AI" : "Sign in to your PerfectFrame AI account"}
             </p>
           </div>
         </div>
 
-        {/* Login Form */}
+        {/* Auth Form */}
         <Card className="border-border/50 shadow-card">
           <CardHeader className="pb-4">
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* First Name Field (Sign Up Only) */}
+              {isSignUp && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">First Name</label>
+                  <Input
+                    type="text"
+                    placeholder="Enter your first name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-background border-border/50 focus:border-primary transition-smooth h-11"
+                    required
+                  />
+                </div>
+              )}
+
               {/* Email Field */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Email</label>
@@ -69,7 +108,7 @@ export const Login = ({ onLogin }: LoginProps) => {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-background border-border/50 focus:border-primary transition-smooth h-12"
+                    className="pl-10 bg-background border-border/50 focus:border-primary transition-smooth h-11"
                     required
                   />
                 </div>
@@ -77,15 +116,26 @@ export const Login = ({ onLogin }: LoginProps) => {
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Password</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-foreground">Password</label>
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-xs text-primary hover:text-primary-glow transition-smooth"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={isSignUp ? "Create a password (min 8 characters)" : "Enter your password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-background border-border/50 focus:border-primary transition-smooth h-12"
+                    className="pl-10 pr-10 bg-background border-border/50 focus:border-primary transition-smooth h-11"
                     required
                   />
                   <button
@@ -98,20 +148,45 @@ export const Login = ({ onLogin }: LoginProps) => {
                 </div>
               </div>
 
-              {/* Sign In Button */}
+              {/* Confirm Password Field (Sign Up Only) */}
+              {isSignUp && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Confirm Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Re-enter your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 pr-10 bg-background border-border/50 focus:border-primary transition-smooth h-11"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-smooth"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 gradient-primary hover:opacity-90 text-primary-foreground font-semibold text-base transition-smooth shadow-elegant"
+                className="w-full h-11 gradient-primary hover:opacity-90 text-primary-foreground font-semibold transition-smooth shadow-elegant"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Signing in...
+                    {isSignUp ? "Creating account..." : "Signing in..."}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    Sign In
+                    {isSignUp ? "Sign Up" : "Sign In"}
                     <ArrowRight className="h-4 w-4" />
                   </div>
                 )}
@@ -156,14 +231,20 @@ export const Login = ({ onLogin }: LoginProps) => {
               Continue with Google
             </Button>
 
-            {/* Sign Up Link */}
+            {/* Toggle Sign In / Sign Up */}
             <p className="text-center text-sm text-muted-foreground mt-6">
-              Don't have an account?{" "}
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
               <button 
-                onClick={() => toast.success("Sign up coming soon!")}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setFirstName("");
+                  setEmail("");
+                  setPassword("");
+                  setConfirmPassword("");
+                }}
                 className="text-primary hover:text-primary-glow font-semibold transition-smooth"
               >
-                Sign up for free
+                {isSignUp ? "Sign in" : "Sign up for free"}
               </button>
             </p>
           </CardContent>
