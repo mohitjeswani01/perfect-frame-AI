@@ -45,11 +45,12 @@ const mockProjects: Project[] = [
 
 interface ProjectSidebarProps {
   onViewGallery: () => void;
+  selectedProjectId: string;
+  onProjectChange: (projectId: string) => void;
 }
 
-export const ProjectSidebar = ({ onViewGallery }: ProjectSidebarProps) => {
+export const ProjectSidebar = ({ onViewGallery, selectedProjectId, onProjectChange }: ProjectSidebarProps) => {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
-  const [selectedProject, setSelectedProject] = useState<string>("1");
 
   const handleNewProject = () => {
     const newProject: Project = {
@@ -61,7 +62,7 @@ export const ProjectSidebar = ({ onViewGallery }: ProjectSidebarProps) => {
     };
     
     setProjects([newProject, ...projects]);
-    setSelectedProject(newProject.id);
+    onProjectChange(newProject.id);
     
     toast("New project started", {
       description: "Ready to create amazing AI-enhanced images!"
@@ -112,9 +113,9 @@ export const ProjectSidebar = ({ onViewGallery }: ProjectSidebarProps) => {
             {projects.map((project) => (
               <div
                 key={project.id}
-                onClick={() => setSelectedProject(project.id)}
+                onClick={() => onProjectChange(project.id)}
                 className={`group relative p-3 rounded-lg border cursor-pointer transition-smooth ${
-                  selectedProject === project.id
+                  selectedProjectId === project.id
                     ? "bg-accent border-ring shadow-card"
                     : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
                 }`}

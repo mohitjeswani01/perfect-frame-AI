@@ -11,6 +11,7 @@ export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentView, setCurrentView] = useState<"workspace" | "gallery">("workspace");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("1");
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -30,6 +31,11 @@ export const Layout = () => {
     setCurrentView("workspace");
   };
 
+  const handleProjectChange = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setCurrentView("workspace");
+  };
+
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
   }
@@ -43,7 +49,11 @@ export const Layout = () => {
         <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] sidebar-bg border-r border-border transition-all duration-300 z-40 ${
           sidebarOpen ? "w-80 translate-x-0" : "w-80 -translate-x-full"
         } overflow-hidden shadow-2xl`}>
-          <ProjectSidebar onViewGallery={handleViewGallery} />
+          <ProjectSidebar 
+            onViewGallery={handleViewGallery}
+            selectedProjectId={selectedProjectId}
+            onProjectChange={handleProjectChange}
+          />
         </div>
 
         {/* Backdrop */}
@@ -75,7 +85,7 @@ export const Layout = () => {
             {currentView === "gallery" ? (
               <Gallery onBack={handleBackToWorkspace} />
             ) : (
-              <Workspace onViewGallery={handleViewGallery} />
+              <Workspace key={selectedProjectId} onViewGallery={handleViewGallery} />
             )}
           </div>
         </div>
