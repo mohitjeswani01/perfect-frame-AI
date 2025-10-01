@@ -77,6 +77,18 @@ export const ProjectSidebar = ({ onViewGallery, selectedProjectId, onProjectChan
 
   const deleteProject = (projectId: string) => {
     setProjects(projects.filter(p => p.id !== projectId));
+    
+    // If deleting the currently selected project, switch to the first remaining project or create new
+    if (projectId === selectedProjectId) {
+      const remainingProjects = projects.filter(p => p.id !== projectId);
+      if (remainingProjects.length > 0) {
+        onProjectChange(remainingProjects[0].id);
+      } else {
+        // No projects left, create a new one
+        handleNewProject();
+      }
+    }
+    
     toast("Project deleted", { description: "Project removed from history" });
   };
 

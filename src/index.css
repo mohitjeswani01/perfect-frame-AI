@@ -78,7 +78,54 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* Remove dark mode overrides for AI tool */
+  /* Light Mode Theme */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 263 10% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 263 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 263 10% 15%;
+
+    /* Light Mode Colors with Purple Accent */
+    --primary: 263 85% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 263 85% 75%;
+
+    --secondary: 263 10% 95%;
+    --secondary-foreground: 263 10% 15%;
+
+    --muted: 263 10% 96%;
+    --muted-foreground: 263 10% 40%;
+
+    --accent: 263 50% 95%;
+    --accent-foreground: 263 85% 45%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 263 10% 90%;
+    --input: 263 10% 96%;
+    --ring: 263 85% 65%;
+
+    /* Light Mode Workspace Tokens */
+    --workspace-bg: 263 10% 98%;
+    --sidebar-bg: 0 0% 100%;
+    --upload-area: 263 10% 96%;
+    --upload-hover: 263 10% 93%;
+    
+    /* Light Mode Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-workspace: linear-gradient(180deg, hsl(var(--workspace-bg)), hsl(263 10% 96%));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(263 10% 98%));
+    
+    /* Light Mode Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.15);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.1);
+    --shadow-card: 0 4px 20px -4px hsl(263 10% 50% / 0.1);
+  }
 }
 
 /* Custom AI Tool Utilities */

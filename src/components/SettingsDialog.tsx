@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,14 +15,7 @@ import {
   Palette, 
   Zap, 
   Shield, 
-  Bell, 
-  Download, 
-  HardDrive, 
-  Wifi,
-  Monitor,
-  Moon,
-  Sun,
-  Volume2
+  Monitor
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,15 +30,26 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     autoSave: true,
     highQuality: false,
     darkMode: true,
-    soundEffects: true,
-    smartPreview: true,
-    cloudSync: false,
     imageQuality: [85],
-    maxFileSize: [10],
   });
+
+  // Initialize dark mode from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark' || savedTheme === null; // Default to dark
+    setSettings(prev => ({ ...prev, darkMode: isDark }));
+    document.documentElement.classList.toggle('dark', isDark);
+  }, []);
 
   const updateSetting = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
+    
+    // Handle dark mode toggle
+    if (key === 'darkMode') {
+      document.documentElement.classList.toggle('dark', value);
+      localStorage.setItem('theme', value ? 'dark' : 'light');
+    }
+    
     toast.success("Settings updated");
   };
 
@@ -96,18 +100,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 />
               </div>
 
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium">Sound Effects</p>
-                  <p className="text-sm text-muted-foreground">Play sounds for interactions</p>
-                </div>
-                <Switch
-                  checked={settings.soundEffects}
-                  onCheckedChange={(checked) => updateSetting('soundEffects', checked)}
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -133,19 +125,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium">Smart Preview</p>
-                  <p className="text-sm text-muted-foreground">Show real-time AI previews</p>
-                </div>
-                <Switch
-                  checked={settings.smartPreview}
-                  onCheckedChange={(checked) => updateSetting('smartPreview', checked)}
-                />
-              </div>
-
-              <Separator />
-
               <div className="space-y-3">
                 <div className="space-y-1">
                   <p className="font-medium">Output Quality</p>
@@ -161,60 +140,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                   step={5}
                   className="w-full"
                 />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Storage & Sync */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <HardDrive className="h-4 w-4" />
-                Storage & Sync
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium">Cloud Sync</p>
-                  <p className="text-sm text-muted-foreground">Sync projects across devices</p>
-                </div>
-                <Switch
-                  checked={settings.cloudSync}
-                  onCheckedChange={(checked) => updateSetting('cloudSync', checked)}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <p className="font-medium">Max File Size</p>
-                  <p className="text-sm text-muted-foreground">
-                    Upload limit: {settings.maxFileSize[0]} MB
-                  </p>
-                </div>
-                <Slider
-                  value={settings.maxFileSize}
-                  onValueChange={(value) => updateSetting('maxFileSize', value)}
-                  max={50}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium">Storage Used</p>
-                  <p className="text-sm text-muted-foreground">2.3 GB of 10 GB used</p>
-                </div>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Data
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -245,10 +170,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 <Button variant="outline" className="w-full justify-start">
                   <Shield className="h-4 w-4 mr-2" />
                   Privacy Policy
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <HardDrive className="h-4 w-4 mr-2" />
-                  Clear Cache & Data
                 </Button>
               </div>
             </CardContent>
